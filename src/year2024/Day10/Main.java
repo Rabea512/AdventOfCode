@@ -1,4 +1,4 @@
-package year2024.Day06;
+package year2024.Day10;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -6,11 +6,11 @@ import java.io.IOException;
 
 public class Main {
     public static void main(String[] args) throws IOException {
-        System.out.println(part1("/Users/degroot/Privat/AdventOfCode/src/year2024/Day06/input_test.txt"));
-        System.out.println(part1("/Users/degroot/Privat/AdventOfCode/src/year2024/Day06/input01.txt"));
+        System.out.println(part1("/Users/degroot/Privat/AdventOfCode/src/year2024/Day10/input_test.txt"));
+        System.out.println(part1("/Users/degroot/Privat/AdventOfCode/src/year2024/Day10/input01.txt"));
 
-        System.out.println(part2("/Users/degroot/Privat/AdventOfCode/src/year2024/Day06/input_test.txt"));
-        System.out.println(part2("/Users/degroot/Privat/AdventOfCode/src/year2024/Day06/input02.txt"));
+        System.out.println(part2("/Users/degroot/Privat/AdventOfCode/src/year2024/Day10/input_test.txt"));
+        System.out.println(part2("/Users/degroot/Privat/AdventOfCode/src/year2024/Day10/input02.txt"));
     }
 
     public static int part1(String path) throws IOException {
