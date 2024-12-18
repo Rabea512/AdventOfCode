@@ -21,3 +21,6 @@ out
 *.zip
 *.tar.gz
 *.rar
+
+**/input01.txt
+**/input02.txt
