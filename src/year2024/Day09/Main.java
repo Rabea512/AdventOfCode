@@ -8,8 +8,8 @@ import java.util.List;
 
 public class Main {
   public static void main(String[] args) throws IOException {
-        System.out.println(
-            part1("/Users/degroot/Privat/AdventOfCode/src/year2024/Day09/input_test.txt"));
+    System.out.println(
+        part1("/Users/degroot/Privat/AdventOfCode/src/year2024/Day09/input_test.txt"));
     System.out.println(part1("/Users/degroot/Privat/AdventOfCode/src/year2024/Day09/input01.txt"));
 
     // System.out.println(part2("/Users/degroot/Privat/AdventOfCode/src/year2024/Day09/input_test.txt"));
@@ -19,18 +19,14 @@ public class Main {
 
   public static int part1(String path) throws IOException {
     final Input input = readInput(path);
-    final List<Block> newFileSystem = new ArrayList<>();
-    for (Block block : input.blocks()) {
-      newFileSystem.add(new Block(block.id(), block.count()));
-    }
 
     int index = input.blocks().size() - 1;
     while (index >= 0) {
-      final Block currentBlockToSort = newFileSystem.get(index);
-      index = sortFile(currentBlockToSort, index, newFileSystem);
+      final Block currentBlockToSort = input.blocks().get(index);
+      index = sortFile(currentBlockToSort, index, input.blocks());
     }
 
-    return calculateChecksum(newFileSystem);
+    return calculateChecksum(input.blocks());
   }
 
   private static int sortFile(Block currentBlockToSort, int index, List<Block> newFileSystem) {
@@ -38,33 +34,34 @@ public class Main {
       return index - 1;
     }
 
-    int indexOfEmptyBlock = findEmptyBlock(newFileSystem);
+    final int indexOfEmptyBlock = findEmptyBlock(newFileSystem);
     if (indexOfEmptyBlock < 0 || indexOfEmptyBlock >= index) {
       return -1;
     }
 
     final Block emptyBlock = newFileSystem.get(indexOfEmptyBlock);
 
-    if (currentBlockToSort.count() == emptyBlock.count()) {
+    if (emptyBlock.count() == 0) {
       newFileSystem.remove(indexOfEmptyBlock);
-      newFileSystem.add(indexOfEmptyBlock, currentBlockToSort);
+      newFileSystem.add(emptyBlock);
+      return index;
+    } else if (currentBlockToSort.count() == emptyBlock.count()) {
+      newFileSystem.set(indexOfEmptyBlock, currentBlockToSort);
+      newFileSystem.add(emptyBlock);
       newFileSystem.remove(index);
       return index - 1;
     } else if (currentBlockToSort.count() < emptyBlock.count()) {
-      newFileSystem.remove(indexOfEmptyBlock);
+      newFileSystem.set(index, new Block(null, currentBlockToSort.count()));
+      newFileSystem.set(indexOfEmptyBlock, currentBlockToSort);
       newFileSystem.add(
-          indexOfEmptyBlock, new Block(null, emptyBlock.count() - currentBlockToSort.count()));
-      newFileSystem.add(indexOfEmptyBlock, currentBlockToSort);
-      newFileSystem.remove(index + 1);
+          indexOfEmptyBlock + 1, new Block(null, emptyBlock.count() - currentBlockToSort.count()));
       return index;
     } else {
-      newFileSystem.remove(indexOfEmptyBlock);
-      newFileSystem.add(indexOfEmptyBlock, new Block(currentBlockToSort.id(), emptyBlock.count()));
-      newFileSystem.remove(index);
+      newFileSystem.set(indexOfEmptyBlock, new Block(currentBlockToSort.id(), emptyBlock.count()));
       final Block newCurrentBlockToSort =
           new Block(currentBlockToSort.id(), currentBlockToSort.count() - emptyBlock.count());
-      newFileSystem.add(newCurrentBlockToSort);
-      return sortFile(newCurrentBlockToSort, newFileSystem.size() - 1, newFileSystem);
+      newFileSystem.set(index, newCurrentBlockToSort);
+      return sortFile(newCurrentBlockToSort, index, newFileSystem);
     }
   }
 
@@ -75,7 +72,7 @@ public class Main {
     for (int i = 0; i < fileSystem.size(); i++) {
       Block currentBlock = fileSystem.get(i);
       if (currentBlock.id() == null) {
-        continue;
+        break;
       }
 
       for (int j = 0; j < currentBlock.count(); j++) {
@@ -90,7 +87,7 @@ public class Main {
   private static int findEmptyBlock(final List<Block> fileSystem) {
     for (int i = 0; i < fileSystem.size(); i++) {
       final Block block = fileSystem.get(i);
-      if (block.id() == null && block.count() > 0) {
+      if (block.id() == null) {
         return i;
       }
     }
@@ -111,9 +108,7 @@ public class Main {
         if (i % 2 == 0) {
           blocks.add(new Block(i / 2, fileLength));
         } else {
-          if (fileLength > 0) {
-            blocks.add(new Block(null, fileLength));
-          }
+          blocks.add(new Block(null, fileLength));
         }
       }
     }
