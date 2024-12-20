@@ -12,12 +12,25 @@ public class Main {
         part1("/Users/degroot/Privat/AdventOfCode/src/year2024/Day09/input_test.txt"));
     System.out.println(part1("/Users/degroot/Privat/AdventOfCode/src/year2024/Day09/input01.txt"));
 
-    // System.out.println(part2("/Users/degroot/Privat/AdventOfCode/src/year2024/Day09/input_test.txt"));
-    //
-    // System.out.println(part2("/Users/degroot/Privat/AdventOfCode/src/year2024/Day09/input02.txt"));
+    System.out.println(
+        part2("/Users/degroot/Privat/AdventOfCode/src/year2024/Day09/input_test.txt"));
+
+    System.out.println(part2("/Users/degroot/Privat/AdventOfCode/src/year2024/Day09/input02.txt"));
   }
 
-  public static int part1(String path) throws IOException {
+  public static long part1(String path) throws IOException {
+    final Input input = readInput(path);
+
+    int index = input.blocks().size() - 1;
+    while (index >= 0) {
+      final Block currentBlockToSort = input.blocks().get(index);
+      index = defragmentFile(currentBlockToSort, index, input.blocks());
+    }
+
+    return calculateChecksum(input.blocks());
+  }
+
+  public static long part2(String path) throws IOException {
     final Input input = readInput(path);
 
     int index = input.blocks().size() - 1;
@@ -29,7 +42,8 @@ public class Main {
     return calculateChecksum(input.blocks());
   }
 
-  private static int sortFile(Block currentBlockToSort, int index, List<Block> newFileSystem) {
+  private static int defragmentFile(
+      final Block currentBlockToSort, final int index, final List<Block> newFileSystem) {
     if (currentBlockToSort.id() == null) {
       return index - 1;
     }
@@ -43,8 +57,7 @@ public class Main {
 
     if (emptyBlock.count() == 0) {
       newFileSystem.remove(indexOfEmptyBlock);
-      newFileSystem.add(emptyBlock);
-      return index;
+      return index - 1;
     } else if (currentBlockToSort.count() == emptyBlock.count()) {
       newFileSystem.set(indexOfEmptyBlock, currentBlockToSort);
       newFileSystem.add(emptyBlock);
@@ -61,22 +74,64 @@ public class Main {
       final Block newCurrentBlockToSort =
           new Block(currentBlockToSort.id(), currentBlockToSort.count() - emptyBlock.count());
       newFileSystem.set(index, newCurrentBlockToSort);
-      return sortFile(newCurrentBlockToSort, index, newFileSystem);
+      return defragmentFile(newCurrentBlockToSort, index, newFileSystem);
     }
   }
 
-  private static int calculateChecksum(final List<Block> fileSystem) {
-    int result = 0;
+  private static int sortFile(
+      final Block currentBlockToSort, final int index, final List<Block> newFileSystem) {
+    if (currentBlockToSort.id() == null) {
+      return index - 1;
+    }
 
-    int pointer = 0;
+    final int indexOfEmptyBlock =
+        findEmptyBlockWithMinLength(newFileSystem, currentBlockToSort.count(), index);
+
+    if (indexOfEmptyBlock < 0) {
+      return index - 1;
+    }
+
+    final Block emptyBlock = newFileSystem.get(indexOfEmptyBlock);
+
+    if (currentBlockToSort.count() == emptyBlock.count()) {
+      newFileSystem.set(indexOfEmptyBlock, currentBlockToSort);
+      newFileSystem.set(index, emptyBlock);
+      return index - 1;
+    } else if (currentBlockToSort.count() < emptyBlock.count()) {
+      newFileSystem.set(index, new Block(null, currentBlockToSort.count()));
+      newFileSystem.set(indexOfEmptyBlock, currentBlockToSort);
+      newFileSystem.add(
+          indexOfEmptyBlock + 1, new Block(null, emptyBlock.count() - currentBlockToSort.count()));
+      return index;
+    }
+
+    return index - 1;
+  }
+
+  private static int findEmptyBlockWithMinLength(
+      final List<Block> fileSystem, final int count, final int index) {
+    for (int i = 0; i < index; i++) {
+      final Block block = fileSystem.get(i);
+      if (block.id() == null && block.count() >= count) {
+        return i;
+      }
+    }
+
+    return -1;
+  }
+
+  private static long calculateChecksum(final List<Block> fileSystem) {
+    long result = 0;
+
+    long pointer = 0;
     for (int i = 0; i < fileSystem.size(); i++) {
       Block currentBlock = fileSystem.get(i);
-      if (currentBlock.id() == null) {
-        break;
-      }
 
       for (int j = 0; j < currentBlock.count(); j++) {
-        result += pointer * currentBlock.id();
+        if (currentBlock.id() != null) {
+
+          result += pointer * currentBlock.id();
+        }
         pointer++;
       }
     }
@@ -93,10 +148,6 @@ public class Main {
     }
 
     return -1;
-  }
-
-  public static int part2(String path) throws IOException {
-    return 0;
   }
 
   public static Input readInput(String path) throws IOException {
